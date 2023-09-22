@@ -274,11 +274,9 @@ class GridSystem {
 			btn.addEventListener('mouseleave', () => this.handleButtonUp(i, btn));
 			// Obsługa dotyku
 			btn.addEventListener('touchstart', (event) => {
-				event.preventDefault(); // zapobiega dodatkowym zdarzeniom myszy na niektórych urządzeniach
 				this.handleButtonDown(i, btn);
 			});
 			btn.addEventListener('touchend', (event) => {
-				event.preventDefault(); // zapobiega dodatkowym zdarzeniom myszy na niektórych urządzeniach
 				this.handleButtonUp(i, btn);
 			});
 			if (i === 5) {

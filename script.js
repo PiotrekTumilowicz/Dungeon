@@ -11,7 +11,7 @@ class Player {
 }
 
 class Enemy {
-	constructor(name,x, y,combatImg,damageImg, deadImg) {
+	constructor(name, x, y, combatImg, damageImg, deadImg) {
 		this.name = name;
 		this.x = x;
 		this.y = y;
@@ -20,7 +20,6 @@ class Enemy {
 		this.combatImg = combatImg;
 		this.damageImg = damageImg;
 		this.deadImg = deadImg;
-
 	}
 }
 
@@ -35,8 +34,8 @@ class EnemyManager {
 	}
 
 	getEnemyAt(x, y) {
-        return this.enemies.find(enemy => enemy.x === x && enemy.y === y);
-    }
+		return this.enemies.find(enemy => enemy.x === x && enemy.y === y);
+	}
 
 	removeEnemy(enemy) {
 		const index = this.enemies.indexOf(enemy);
@@ -47,7 +46,7 @@ class EnemyManager {
 
 	renderEnemies(player, context, w, h) {
 		const { x, y } = player;
-	
+
 		this.enemies.forEach(enemy => {
 			if (enemy.x === x && enemy.y === y) {
 				this.loadImage(enemy.combatImg).then(img => {
@@ -67,7 +66,7 @@ class EnemyManager {
 			}, 500);
 		});
 	}
-	
+
 	renderEnemyDeath(enemy, context, w, h) {
 		this.loadImage(enemy.deadImg).then(img => {
 			context.drawImage(img, 0, 0, w, h);
@@ -77,8 +76,6 @@ class EnemyManager {
 			}, 1000);
 		});
 	}
-	
-	
 }
 
 class GridSystem {
@@ -94,19 +91,21 @@ class GridSystem {
 		this.discoveredMatrix = matrix.map(row => row.map(() => false));
 		this.player = new Player(playerX, playerY);
 		this.enemyManager = new EnemyManager(this.loadImage.bind(this));
-		this.enemyManager.addEnemy(new Enemy('Bat',1, 1, '../enemies/monster10.png','../enemies/monster11.png','../enemies/monster12.png',  ));
+		this.enemyManager.addEnemy(
+			new Enemy('Bat', 1, 1, '../enemies/monster10.png', '../enemies/monster11.png', '../enemies/monster12.png')
+		);
 		this.discoveredMatrix[playerY][playerX] = true;
 		this.matrix[playerY][playerX] = 2;
 		this.showMaze = false;
 		this.imageCache = {};
 		this.states = {
 			exploring: 'exploring',
-			fighting: 'fighting'
+			fighting: 'fighting',
 		};
 		this.state = this.states.exploring;
 		this.buttonImages = {
 			exploring: '../buttons/',
-			fighting: '../fight-buttons/'
+			fighting: '../fight-buttons/',
 		};
 		this.currentEnemy = null;
 
@@ -123,7 +122,7 @@ class GridSystem {
 		if (id === 'imageContext') {
 			canvas.classList.add('pixel-perfect');
 		}
-		if (id=== 'enemyImageContext'){
+		if (id === 'enemyImageContext') {
 			canvas.classList.add('pixel-perfect');
 			isTransparent = true;
 		}
@@ -217,8 +216,6 @@ class GridSystem {
 		}
 	}
 
-	
-
 	startBattle(enemy) {
 		this.switchToFightState();
 		this.currentEnemy = enemy;
@@ -229,10 +226,15 @@ class GridSystem {
 		if (this.currentEnemy) {
 			this.currentEnemy.hp -= 1;
 			console.log(`Attacking enemy ${this.currentEnemy.name}. Remaining HP: ${this.currentEnemy.hp}`);
-	
+
 			// Podmień obrazek na wersję "damaged"
-			this.enemyManager.renderEnemyDamage(this.currentEnemy, this.enemyImageContext, window.innerWidth, window.innerHeight);
-	
+			this.enemyManager.renderEnemyDamage(
+				this.currentEnemy,
+				this.enemyImageContext,
+				window.innerWidth,
+				window.innerHeight
+			);
+
 			if (this.currentEnemy.hp <= 0) {
 				console.log(`Enemy ${this.currentEnemy.name} defeated!`);
 				this.enemyManager.removeEnemy(this.currentEnemy);
@@ -240,9 +242,14 @@ class GridSystem {
 			}
 		}
 	}
-	
+
 	endBattle() {
-		this.enemyManager.renderEnemyDeath(this.currentEnemy, this.enemyImageContext, window.innerWidth, window.innerHeight);
+		this.enemyManager.renderEnemyDeath(
+			this.currentEnemy,
+			this.enemyImageContext,
+			window.innerWidth,
+			window.innerHeight
+		);
 		this.switchToExploringState();
 	}
 	checkForEnemyAt(x, y) {
@@ -252,6 +259,22 @@ class GridSystem {
 	async generateButtons() {
 		const buttonContainer = document.getElementById('buttonContainer');
 		const buttonsContainer = document.createElement('div');
+		const isTouchDevice = 'ontouchstart' in document.documentElement;
+
+		const buttonEventHandlers = isTouchDevice
+			? {
+					start: 'touchstart',
+					end: 'touchend',
+					move: 'touchmove',
+					cancel: 'touchcancel',
+			  }
+			: {
+					start: 'mousedown',
+					end: 'mouseup',
+					move: 'mousemove',
+					cancel: 'mouseleave',
+			  };
+
 		buttonsContainer.id = 'buttonsContainer';
 		buttonContainer.appendChild(buttonsContainer);
 		// Załaduj wszystkie obrazki przed generowaniem przycisków
@@ -267,23 +290,23 @@ class GridSystem {
 			const btn = document.createElement('button');
 			btn.classList.add('game-button');
 			btn.style.backgroundImage = `url(${this.buttonImages[this.state]}${i}.png)`;
-			btn.dataset.id = i; // Przypisz ID przycisku jako data-atrybut	
+			btn.dataset.id = i; // Przypisz ID przycisku jako data-atrybut
 			// Obsługa myszy
 			btn.addEventListener('mousedown', () => this.handleButtonDown(i, btn));
 			btn.addEventListener('mouseup', () => this.handleButtonUp(i, btn));
 			btn.addEventListener('mouseleave', () => this.handleButtonUp(i, btn));
 			// Obsługa dotyku
-			btn.addEventListener('touchstart', (event) => {
+			btn.addEventListener('touchstart', event => {
 				this.handleButtonDown(i, btn);
 			});
-			btn.addEventListener('touchend', (event) => {
+			btn.addEventListener('touchend', event => {
 				this.handleButtonUp(i, btn);
 			});
 			if (i === 5) {
-				btn.addEventListener('mousedown', this.handleMapButtonDown.bind(this));
-				btn.addEventListener('mouseup', this.handleMapButtonUp.bind(this));
+				btn.addEventListener(buttonEventHandlers.start, this.handleMapButtonDown.bind(this));
+				btn.addEventListener(buttonEventHandlers.end, this.handleMapButtonUp.bind(this));
 			} else {
-				btn.addEventListener('click', this.buttonClicked.bind(this, i));
+				btn.addEventListener(buttonEventHandlers.end, this.buttonClicked.bind(this, i));
 			}
 			buttonsContainer.appendChild(btn);
 		}
@@ -293,7 +316,7 @@ class GridSystem {
 
 		const buttonsContainer = document.getElementById('buttonsContainer');
 		if (!buttonsContainer) return;
-	
+
 		const buttons = buttonsContainer.getElementsByClassName('game-button');
 		for (let btn of buttons) {
 			const buttonId = btn.dataset.id;
@@ -396,7 +419,6 @@ class GridSystem {
 		let dx = 0;
 		let dy = 0;
 
-
 		switch (this.player.direction) {
 			case 'N':
 				dy = -1;
@@ -459,7 +481,7 @@ class GridSystem {
 					this.player.x += dx;
 					this.player.isMoving = true;
 					this.moveForward();
-					
+
 					// Sprawdzenie, czy na nowej pozycji gracza jest wróg:
 					const enemy = this.enemyManager.getEnemyAt(this.player.x, this.player.y);
 					if (enemy) {
